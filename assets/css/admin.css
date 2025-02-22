@@ -1,0 +1,67 @@
+/* Admin Page Styles */
+.gf-twilio-otp-settings {
+	max-width: 600px;
+	margin: 20px auto;
+}
+
+.gf-twilio-otp-settings input[type="text"] {
+	width: 100%;
+	padding: 10px;
+}
+
+.wrap.gf_twilio_otp_settings {
+    max-width: 1000px;
+    background: #fff;
+    padding: 10px 20px;
+    border-radius: 5px;
+    margin-bottom: 30px;
+}
+
+.gf-twilio-otp-repeater-item {
+    padding: 10px;
+    border: 1px solid #efefef;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    border-radius: 5px;
+}
+
+.gf-twilio-otp-repeater-item:not(:last-child) {
+    margin-bottom: 10px;
+}
+
+.button.button-danger {
+    color: red;
+    border-color: red;
+    background: #fff7f7;
+}
+
+.button.button-danger:focus {
+    outline: 2px solid red!important;
+    background: #fff5f5;
+    color: red;
+    border-color: red;
+}
+
+.button.button-danger:hover {
+    background: #fff5f5;
+    border-color: red;
+    color: red;
+}
+
+.gf-twilio-otp-repeater {
+    padding: 10px;
+    border-radius: 5px;
+    border: 1px solid #e8e8e8;
+    margin-bottom: 10px;
+}
+
+button.gf-twilio-otp-add-field.button {
+    float: right;
+    clear: both;
+}
+
+p.info {
+    margin: 0px!important;
+    color: #888888;
+}

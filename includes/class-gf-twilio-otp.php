@@ -22,6 +22,10 @@ class GF_Twilio_OTP
             new Settings();
         }
         
+        $gform_modifications = new GForm_Modifications();
+        $gform_modifications->init();
+
+        new OTP();
     }
 
     public static function instance()
@@ -35,5 +39,8 @@ class GF_Twilio_OTP
     private function load_dependencies()
     {
         require_once GF_TWILIO_OTP_PATH . 'includes/class-admin-settings.php';
+        require_once GF_TWILIO_OTP_PATH . 'includes/class-helper.php';
+        require_once GF_TWILIO_OTP_PATH . 'includes/class-otp.php';
+        require_once GF_TWILIO_OTP_PATH . 'includes/class-gform-modifications.php';
     }
 }
