@@ -13,5 +13,9 @@ if (!defined('ABSPATH')) {
     exit; // Exit if accessed directly
 }
 
+define('GF_TWILIO_OTP_PATH', plugin_dir_path(__FILE__));
 
+require_once GF_TWILIO_OTP_PATH . 'includes/class-gf-twilio-otp.php';
+
+\GF_Twilio_OTP\GF_Twilio_OTP::instance();
 
