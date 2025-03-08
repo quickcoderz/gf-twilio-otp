@@ -23,6 +23,7 @@ input#gf_otp_input {
     height: 52px !important;
     width: 100% !important;
     margin: 0px;
+    outline: 0;
 }
 
 button#gf_verify_otp_button {
