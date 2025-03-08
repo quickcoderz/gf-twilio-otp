@@ -41,9 +41,13 @@ class GForm_Modifications {
                     ?>
                     <div id="gf_otp_popup" style="display: none;">
                         <div class="gf_otp_popup_content">
-                            <label for="gf_otp_input">Enter OTP:</label>
+                            <?php
+                            $title_text = isset($options['send_otp_title_popup']) ? esc_html($options['send_otp_title_popup']) : 'Enter OTP';
+                            $button_text = isset($options['send_otp_popup_button']) ? esc_html($options['send_otp_popup_button']) : 'Verify OTP';
+                            ?>
+                            <label for="gf_otp_input"><?php echo $title_text; ?></label>
                             <input type="text" id="gf_otp_input" name="gf_otp_input">
-                            <button type="button" id="gf_verify_otp_button">Verify OTP</button>
+                            <button type="button" id="gf_verify_otp_button"><?php echo $button_text; ?></button>
                             <div id="gf_otp_timer" style="margin-top: 10px; font-size: 14px;"></div>
                             <p class="info resend-wrap">Didn't you received OTP? <a href="#" class="resend-otp">Resend</a></p>
                             <div id="gf_otp_error" style="color: red; display: none;"></div>
@@ -56,9 +60,30 @@ class GForm_Modifications {
             }
         }
     }
+    /*
+    public function add_send_otp_button($button, $form) {
+        $options = get_option('gf_twilio_otp_settings');
+        $selected_forms = isset($options['selected_gravity_forms']) ? $options['selected_gravity_forms'] : array();
+
+        if (in_array($form['id'], $selected_forms)) {
+            $send_otp_button = '<input type="submit" id="gf_send_otp_button_' . esc_attr($form['id']) . '" class="button g_send_otp_button" value="Send OTP">';
+            
+            $dom = new DOMDocument();
+            $dom->loadHTML('<?xml encoding="utf-8" ?>' . $button);
+            $input = $dom->getElementsByTagName('input')->item(0);
+            $classes = $input->getAttribute('class');
+            $classes .= " gf_twilio_otp_hidden";
+            $input->setAttribute('class', $classes);
+            return $send_otp_button . $dom->saveHtml($input);
+        }
+
+        return $button;
+    }*/
 
     public function add_send_otp_button($button, $form) {
         $options = get_option('gf_twilio_otp_settings');
+        $enable_otp_button = isset($options['enable_otp_button']) && $options['enable_otp_button'] == '1';
+    
         try {
             $selected_forms = isset($options['selected_gravity_forms']) ? $options['selected_gravity_forms'] : array();
             
@@ -68,19 +93,50 @@ class GForm_Modifications {
             });
     
             if (!empty($form_selected)) {
-                $send_otp_button = '<input type="submit" id="gf_send_otp_button_' . esc_attr($form['id']) . '" class="button g_send_otp_button" value="Send OTP">';
-                
+                $otp_button_class = $enable_otp_button ? 'gf_twilio_otp_hidden' : '';
+                $submit_button_class = $enable_otp_button ? '' : 'gf_twilio_otp_hidden';
+    
+                // Add OTP button
+                $send_otp_button = '<input type="submit" id="gf_send_otp_button_' . esc_attr($form['id']) . '" class="button g_send_otp_button ' . esc_attr($otp_button_class) . '" value="Send OTP">';
+    
+                // Modify existing submit button
                 $dom = new DOMDocument();
+                libxml_use_internal_errors(true); // Prevents HTML parsing errors
                 $dom->loadHTML('<?xml encoding="utf-8" ?>' . $button);
+                libxml_clear_errors();
+    
                 $input = $dom->getElementsByTagName('input')->item(0);
-                $classes = $input->getAttribute('class');
-                $classes .= " gf_twilio_otp_hidden";
-                $input->setAttribute('class', $classes);
-                return $send_otp_button . $dom->saveHtml($input);
+                if ($input) {
+                    $classes = $input->getAttribute('class');
+                    $classes .= " " . esc_attr($submit_button_class);
+                    $input->setAttribute('class', trim($classes));
+                }
+    
+                // JavaScript to ensure proper button toggling on multi-page forms
+                $script = "<script>
+                    (function($) {
+                        $(document).on('gform_page_loaded', function(event, form_id, current_page) {
+                            if(form_id == " . esc_js($form['id']) . ") {
+                                var enableOtpButton = " . json_encode($enable_otp_button) . ";
+    
+                                if (enableOtpButton) {
+                                    $('.g_send_otp_button').hide();
+                                    $('.gform_button').removeClass('gf_twilio_otp_hidden');
+                                } else {
+                                    $('.g_send_otp_button').show();
+                                    $('.gform_button').addClass('gf_twilio_otp_hidden');
+                                }
+                            }
+                        });
+                    })(jQuery);
+                </script>";
+    
+                return $send_otp_button . $dom->saveHtml($input) . $script;
             }
-        } catch(\Exception $e) {
+        } catch (\Exception $e) {
             error_log('Error Adding Button: ' . $e->getMessage());
         }
         return $button;
     }
-}
+    
+}    

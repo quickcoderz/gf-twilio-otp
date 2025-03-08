@@ -171,6 +171,36 @@ class Settings
             'gf-twilio-otp',
             'gf_twilio_otp_settings_section'
         );
+        add_settings_field(
+            'send_otp_button_text',
+            'Send OTP Button Text',
+            array('GF_Twilio_OTP\Admin\Settings', 'render_send_otp_button_text_field'),
+            'gf-twilio-otp',
+            'gf_twilio_otp_settings_section'
+        );
+        add_settings_field(
+            'send_otp_title_popup',
+            'Send OTP Title Popup',
+            array('GF_Twilio_OTP\Admin\Settings', 'render_send_otp_title_popup_field'),
+            'gf-twilio-otp',
+            'gf_twilio_otp_settings_section'
+        );
+        add_settings_field(
+            'send_otp_popup_button',
+            'OTP Popup Button Text',
+            array('GF_Twilio_OTP\Admin\Settings', 'render_send_otp_popup_button_field'),
+            'gf-twilio-otp',
+            'gf_twilio_otp_settings_section'
+        );
+        add_settings_field(
+            'enable_otp_button',
+            'Disable the OTP Functionality',
+            array('GF_Twilio_OTP\Admin\Settings', 'render_enable_otp_button_field'),
+            'gf-twilio-otp',
+            'gf_twilio_otp_settings_section'
+        );
+        
+        
     }
 
     public static function sanitize($input)
@@ -207,7 +237,12 @@ class Settings
         }
 
         $sanitized['twilio_message_template'] = sanitize_textarea_field($input['twilio_message_template'] ?? '');
-
+        $sanitized['send_otp_button_text'] = sanitize_text_field($input['send_otp_button_text']?? '');
+        $sanitized['send_otp_title_popup'] = sanitize_text_field($input['send_otp_title_popup']?? '');
+        $sanitized['send_otp_popup_button'] = sanitize_text_field($input['send_otp_popup_button']?? '');
+        $sanitized['enable_otp_button'] = isset($input['enable_otp_button']) ? '1' : '0';
+        
+        
         return $sanitized;
     }
 
@@ -285,7 +320,22 @@ class Settings
         $value = self::$options['otp_verify_failed_message'] ?? '';
         echo "<input type='text' name='gf_twilio_otp_settings[otp_verify_failed_message]' value='" . esc_attr($value) . "' style='width: 100%;'>";
     }
-
+    public static function render_send_otp_button_text_field() {
+        $options = get_option('gf_twilio_otp_settings');
+        $button_text = isset($options['send_otp_button_text']) ? esc_attr($options['send_otp_button_text']) : 'Send OTP';
+        echo '<input type="text" name="gf_twilio_otp_settings[send_otp_button_text]" value="' . $button_text . '" class="regular-text">';
+    }
+    public static function render_send_otp_title_popup_field() {
+        $options = get_option('gf_twilio_otp_settings');
+        $button_text = isset($options['send_otp_title_popup']) ? esc_attr($options['send_otp_title_popup']) : 'Enter OTP';
+        echo '<input type="text" name="gf_twilio_otp_settings[send_otp_title_popup]" value="' . $button_text . '" class="regular-text">';
+    }
+    public static function render_send_otp_popup_button_field() {
+        $options = get_option('gf_twilio_otp_settings');
+        $button_text = isset($options['send_otp_popup_button']) ? esc_attr($options['send_otp_popup_button']) : 'Verify OTP';
+        echo '<input type="text" name="gf_twilio_otp_settings[send_otp_popup_button]" value="' . $button_text . '" class="regular-text">';
+    }
+    
     public static function render_otp_max_tries_field()
     {
         $value = isset(self::$options['otp_max_tries']) ? self::$options['otp_max_tries'] : '';
@@ -297,7 +347,14 @@ class Settings
         $value = isset(self::$options['otp_length']) ? self::$options['otp_length'] : '';
         echo "<input type='number' name='gf_twilio_otp_settings[otp_length]' value='" . esc_attr($value) . "' min='1' step='1'>";
     }
-
+    public static function render_enable_otp_button_field() {
+        $options = get_option('gf_twilio_otp_settings', []);
+        $checked = isset($options['enable_otp_button']) && $options['enable_otp_button'] == '1' ? 'checked' : '';
+        
+        echo '<input type="checkbox" id="enable_otp_button" name="gf_twilio_otp_settings[enable_otp_button]" value="1" ' . $checked . '>';
+    }
+    
+    
     public static function render_selected_gravity_forms_field()
     {
         $selected_forms = self::$options['selected_gravity_forms'] ?? [];
@@ -373,22 +430,22 @@ class Settings
                 $('.gf-twilio-otp-add-field').on('click', function() {
                     const index = $('.gf-twilio-otp-repeater-item').length;
                     const template = `
-                                            <div class="gf-twilio-otp-repeater-item">
+                        <div class="gf-twilio-otp-repeater-item">
                             <label for="form_select_${index}">Form:</label>
                             <select name="gf_twilio_otp_settings[selected_gravity_forms][${index}][form_id]" 
                                     class="form-select" id="form_select_${index}">
-                                                    <option value="">Select a form</option>
+                                <option value="">Select a form</option>
                                 ${formsData.map(form => 
                                     `<option value="${form.id}">${form.title}</option>`).join('')}
-                                                </select>
+                            </select>
                             <label for="phone_field_${index}">Phone Field:</label>
                             <select name="gf_twilio_otp_settings[selected_gravity_forms][${index}][phone_field_id]" 
                                     id="phone_field_${index}">
                                 <option value="">Select a field</option>
                             </select>
                             <button type="button" class="gf-twilio-otp-remove-field button button-danger">Remove</button>
-                                            </div>
-                                        `;
+                        </div>
+                    `;
 
                     if (index === 0) {
                         $('.gf-twilio-otp-repeater').empty();
